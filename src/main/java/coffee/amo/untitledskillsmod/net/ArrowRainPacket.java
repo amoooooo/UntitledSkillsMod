@@ -1,37 +1,47 @@
 package coffee.amo.untitledskillsmod.net;
 
 import coffee.amo.untitledskillsmod.UntitledSkillsMod;
+import coffee.amo.untitledskillsmod.combat.ArrowRainHolder;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class EntityHurtPacket {
-    public int data;
+public class ArrowRainPacket {
+    public int x;
+    public int y;
+    public int z;
 
-    public EntityHurtPacket(int data) {
-        this.data = data;
+
+    public ArrowRainPacket(int x, int y, int z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
-    public EntityHurtPacket(FriendlyByteBuf buffer) {
-        this.data = buffer.readInt();
+    public ArrowRainPacket(FriendlyByteBuf buffer) {
+        this.x = buffer.readInt();
+        this.y = buffer.readInt();
+        this.z = buffer.readInt();
     }
 
     public void encode(FriendlyByteBuf buffer) {
-        buffer.writeInt(data);
+        buffer.writeInt(x);
+        buffer.writeInt(y);
+        buffer.writeInt(z);
     }
 
-    public static void handle(EntityHurtPacket msg, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(ArrowRainPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             Player p = ctx.get().getSender();
             if(p == null) return;
-            UntitledSkillsMod.LOGGER.info("Received AOESpinPacket");
-            p.level.getEntity(msg.data).hurt(DamageSource.playerAttack(p), (float) p.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
+            UntitledSkillsMod.LOGGER.info("Received ArrowRainPacket");
+            ArrowRainHolder.addArrowRainHolder(new ArrowRainHolder(msg.x, msg.y, msg.z, 0, 100, 5, p.level, p));
+            p.releaseUsingItem();
+            p.getMainHandItem().releaseUsing(p.level, p, p.getMainHandItem().getUseDuration());
         });
         ctx.get().setPacketHandled(true);
     }

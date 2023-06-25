@@ -11,14 +11,14 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class AOESpinPacket {
+public class EntityHurtPacket {
     public int data;
 
-    public AOESpinPacket(int data) {
+    public EntityHurtPacket(int data) {
         this.data = data;
     }
 
-    public AOESpinPacket(FriendlyByteBuf buffer) {
+    public EntityHurtPacket(FriendlyByteBuf buffer) {
         this.data = buffer.readInt();
     }
 
@@ -26,17 +26,12 @@ public class AOESpinPacket {
         buffer.writeInt(data);
     }
 
-    public static void handle(AOESpinPacket msg, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(EntityHurtPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             Player p = ctx.get().getSender();
             if(p == null) return;
             UntitledSkillsMod.LOGGER.info("Received AOESpinPacket");
-            p.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1, 0.35f);
-            p.level.getEntities(p, p.getBoundingBox().inflate(msg.data/20f), (e) -> !(e instanceof Player) && e.isAlive() && e instanceof LivingEntity).forEach((e) -> {
-                if (e != p) {
-                    e.hurt(DamageSource.playerAttack(p), (float) p.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
-                }
-            });
+            p.level.getEntity(msg.data).hurt(DamageSource.playerAttack(p), (float) p.getAttribute(Attributes.ATTACK_DAMAGE).getValue());
         });
         ctx.get().setPacketHandled(true);
     }

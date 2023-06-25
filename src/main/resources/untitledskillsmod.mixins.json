@@ -1,10 +1,11 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "coffee.amo.UntitledSkillsMod.mixin",
+  "package": "coffee.amo.untitledskillsmod.mixin",
   "compatibilityLevel": "JAVA_8",
-  "refmap": "UntitledSkillsMod.refmap.json",
+  "refmap": "untitledskillsmod.refmap.json",
   "mixins": [
+    "AbstractArrowAccessor"
   ],
   "client": [
   ],
